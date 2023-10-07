@@ -2,14 +2,14 @@ const express = require("express");
 const dotenv = require("dotenv");
 const { default: mongoose } = require("mongoose");
 const app = express();
-// const cors = require("cors");
+const cors = require("cors");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-// app.use(
-//   cors({
-//     origin: "*",
-//   })
-// );
+app.use(
+  cors({
+    origin: "*",
+  })
+);
 dotenv.config();
 
 app.use(express.json());
@@ -41,4 +41,26 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, console.log("Server is Running..."));
+
+const server=app.listen(PORT, console.log("Server is Running..."));
+
+const io =require("socket.io")(server,{
+  cors:{
+    origin:"*",
+  },
+  pingTimeout:60000,
+});
+io.on("connection",(socket)=>{
+    socket.on("setup",(user)=>{
+        socket.join(user._id);
+        socket.emit("connected");
+    });
+    socket.on("newMessage",(newMessageStatus)=>{
+      var chat=newMessageStatus.chat;
+      if(!chat.users) return console.log("Chat.users not defined");
+      chat.users.forEach((user)=>{
+        if(user._id==newMessageStatus.sender._id) return;
+        socket.in(user._id).emit("messageReceived",newMessageStatus);
+      });
+    });
+});
