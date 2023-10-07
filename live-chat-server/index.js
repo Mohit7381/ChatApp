@@ -2,14 +2,14 @@ const express = require("express");
 const dotenv = require("dotenv");
 const { default: mongoose } = require("mongoose");
 const app = express();
-const cors = require("cors");
+// const cors = require("cors");
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 
-app.use(
-  cors({
-    origin: "*",
-  })
-);
+// app.use(
+//   cors({
+//     origin: "*",
+//   })
+// );
 dotenv.config();
 
 app.use(express.json());
